@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Session;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\OrderItem;
+use Midtrans\Config;
+use Midtrans\Snap;
 use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
@@ -21,11 +23,32 @@ class PaymentController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang anda kosong atau total harga tidak ditemukan.');
         }
 
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production', false);
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => uniqid(),
+                'gross_amount' => $totalPrice,
+            ],
+            'customer_details' => [
+                'first_name' => 'Nama Default',
+                'email' => 'email@default.com',
+                'phone' => '081234567890',
+            ],
+        ];
+
+        $snapToken = Snap::getSnapToken($params);
+
         return view('payments.create', compact('totalPrice'));
     }
 
     public function processPayment(Request $request)
     {
+        // Validasi data input
         $request->validate([
             'name' => 'required|string|max:255',
             'altujuan' => 'required|string|max:255',
@@ -35,23 +58,40 @@ class PaymentController extends Controller
         ]);
 
         try {
+            // Ambil total harga dari sesi
             $amount = Session::get('total_price', 0);
 
-            $ongkosKirim = 0;
-            switch ($request->input('altujuan')) {
-                case 'Martapura':
-                    $ongkosKirim = 10000;
-                    break;
-                case 'Banjarbaru':
-                    $ongkosKirim = 15000;
-                    break;
-                case 'Banjarmasin':
-                    $ongkosKirim = 20000;
-                    break;
-            }
+            // Hitung ongkos kirim berdasarkan alamat tujuan
+            $ongkosKirim = match ($request->input('altujuan')) {
+                'Martapura' => 10000,
+                'Banjarbaru' => 15000,
+                'Banjarmasin' => 20000,
+                default => 0,
+            };
 
             $totalPrice = $amount + $ongkosKirim;
 
+            // Konfigurasi Midtrans
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$isProduction = config('services.midtrans.is_production', false);
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
+
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => uniqid(),
+                    'gross_amount' => $totalPrice,
+                ],
+                'customer_details' => [
+                    'first_name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                ],
+            ];
+            $snapToken = Snap::getSnapToken($params);
+
+            // Simpan detail pembayaran ke database
             $payment = Payment::create([
                 'user_id' => auth()->id(),
                 'name' => $request->input('name'),
@@ -65,8 +105,8 @@ class PaymentController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Simpan setiap item pesanan ke order_items
-            $cartItems = Session::get('cart', []); // Ambil data keranjang dari sesi
+            // Simpan setiap item pesanan
+            $cartItems = Session::get('cart', []);
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'payment_id' => $payment->id,
@@ -76,9 +116,11 @@ class PaymentController extends Controller
                 ]);
             }
 
-            Session::forget(['total_price', 'cart']); // Hapus sesi setelah selesai
+            // Hapus sesi
+            Session::forget(['total_price', 'cart']);
 
-            return redirect()->route('payment.success')->with('success', 'Pembayaran berhasil diproses.');
+            // Kirim token ke view untuk Snap Popup
+            return redirect()->route('payment.showPaymentSuccess')->with('snapToken', $snapToken);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -86,7 +128,7 @@ class PaymentController extends Controller
 
     public function manageOrders()
     {
-        $orders = Payment::with(['user','items.product'])->get(); // Ambil semua data pesanan beserta itemnya
+        $orders = Payment::with(['user', 'items.product'])->get(); // Ambil semua data pesanan beserta itemnya
         return view('admin.products.kelola', compact('orders')); // Arahkan ke tampilan manage
     }
 
@@ -127,6 +169,7 @@ class PaymentController extends Controller
     public function showPaymentSuccess()
     {
         $order = Payment::where('user_id', Auth::id())->latest()->with('items.product')->first();
+        $snapToken = session('snapToken');
 
         if (!$order) {
             return redirect()->route('customer.dashboard')->with('error', 'Pesanan tidak ditemukan.');
@@ -140,6 +183,6 @@ class PaymentController extends Controller
             default => 0,
         };
 
-        return view('payments.success', compact('order', 'totalPriceWithShipping', 'shippingCost'));
+        return view('payments.success', compact('order', 'totalPriceWithShipping', 'shippingCost', 'snapToken'));
     }
 }

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/payment.css">
     <script defer src="js/payment.js"></script>
+    
 </head>
 <body>
     <header class="navbar">
@@ -55,7 +56,7 @@
             <option value="ewallet">E-Wallet</option>
         </select>
 
-        <button type="submit">Konfirmasi Pembayaran</button>
+        <button type="submit" id="pay-button">Konfirmasi Pembayaran</button>
     </form>
     
         
