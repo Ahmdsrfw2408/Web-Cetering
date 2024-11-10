@@ -39,7 +39,7 @@ Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/menu', [ProductController::class, 'ind'])->name('menu.index');
     Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');
     Route::get('/payment/success', [PaymentController::class, 'showPaymentSuccess'])->name('payment.showPaymentSuccess');
-    Route::get('/payment', [PaymentController::class, 'showPaymentPage'])->name('payment.create');
+    Route::get('/payment', [PaymentController::class, 'showPaymentPage'])->name('payment.create')->middleware('auth');
     Route::post('/payments/{payment}/confirm-delivery', [PaymentController::class, 'confirmDelivery'])->name('payments.confirmDelivery');
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');

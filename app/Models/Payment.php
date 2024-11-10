@@ -21,6 +21,7 @@ class Payment extends Model
         'transaction_id',
         'shipping_cost',  // Tambahkan kolom ini
         'total_price',
+        'photo',
     ];
 
     public function user()

@@ -15,6 +15,7 @@ class PaymentController extends Controller
 {
     public function showPaymentPage()
     {
+        $user = Auth::user();
         // Ambil total harga dari sesi, jika tidak ada set default 0
         $totalPrice = Session::get('total_price', 0);
 
@@ -43,7 +44,7 @@ class PaymentController extends Controller
 
         $snapToken = Snap::getSnapToken($params);
 
-        return view('payments.create', compact('totalPrice'));
+        return view('payments.create', compact('totalPrice', 'user'));
     }
 
     public function processPayment(Request $request)
@@ -61,13 +62,19 @@ class PaymentController extends Controller
             // Ambil total harga dari sesi
             $amount = Session::get('total_price', 0);
 
-            // Hitung ongkos kirim berdasarkan alamat tujuan
+            // Hitung ongkos kirim berdasarkan kecamatan yang dipilih
             $ongkosKirim = match ($request->input('altujuan')) {
-                'Martapura' => 10000,
-                'Banjarbaru' => 15000,
-                'Banjarmasin' => 20000,
+                'Martapura Timur' => 12000,
+                'Martapura Barat' => 14000,
+                'Martapura Kota' => 10000,
+                'Banjarbaru Utara' => 15000,
+                'Banjarbaru Selatan' => 16000,
+                'Banjarmasin Timur' => 20000,
+                'Banjarmasin Barat' => 21000,
                 default => 0,
             };
+
+
 
             $totalPrice = $amount + $ongkosKirim;
 
@@ -88,8 +95,12 @@ class PaymentController extends Controller
                     'email' => $request->email,
                     'phone' => $request->phone,
                 ],
+                'callbacks' => [
+                    'finish' => route('payment.showPaymentSuccess')  // URL setelah transaksi berhasil
+                ]
             ];
-            $snapToken = Snap::getSnapToken($params);
+            $transaction = Snap::createTransaction($params);
+            $redirectUrl = $transaction->redirect_url;
 
             // Simpan detail pembayaran ke database
             $payment = Payment::create([
@@ -120,7 +131,7 @@ class PaymentController extends Controller
             Session::forget(['total_price', 'cart']);
 
             // Kirim token ke view untuk Snap Popup
-            return redirect()->route('payment.showPaymentSuccess')->with('snapToken', $snapToken);
+            return redirect($redirectUrl);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -141,7 +152,7 @@ class PaymentController extends Controller
 
         // Simpan foto yang diunggah
         $photoPath = $request->file('photo')->store('delivery_photos', 'public');
-
+        
         // Update status pesanan dan simpan path foto di database
         $payment->update([
             'status' => 'success',
@@ -176,12 +187,7 @@ class PaymentController extends Controller
         }
 
         $totalPriceWithShipping = $order->total_price;
-        $shippingCost = match ($order->address) {
-            'Martapura' => 10000,
-            'Banjarbaru' => 15000,
-            'Banjarmasin' => 20000,
-            default => 0,
-        };
+        $shippingCost = $order->shipping_cost;
 
         return view('payments.success', compact('order', 'totalPriceWithShipping', 'shippingCost', 'snapToken'));
     }

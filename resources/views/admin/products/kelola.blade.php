@@ -22,11 +22,12 @@
             <td>{{ ucfirst($order->status) }}</td>
             <td>
                 @if($order->status === 'success' && $order->photo)
-                    <img src="{{ asset('storage/' . $order->photo) }}" alt="Foto Produk" width="100px">
+                    <img src="{{ asset('storage/' . $order->photo) }}" alt="Foto Bukti" width="100px">
                 @else
                     Tidak ada
                 @endif
             </td>
+            
             <td>
                 @if ($order->status === 'pending')
                     <form action="{{ route('admin.products.updateStatus', $order->id) }}" method="POST" style="display:inline-block;">
