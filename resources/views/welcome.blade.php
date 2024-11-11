@@ -6,7 +6,6 @@
     <title>Warung Ratu - Selamat Datang</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet" />
     <style>
-        /* Warna tema dan font */
         :root {
             --primary-color: #ff5722;
             --secondary-color: #333;
@@ -18,7 +17,6 @@
             font-family: "Poppins", sans-serif;
         }
 
-        /* Reset dasar */
         * {
             margin: 0;
             padding: 0;
@@ -29,17 +27,16 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background-image: url("/img/ayam_bakar.jpeg"); /* Gambar background */
-            background-size: cover; /* Menyesuaikan ukuran gambar agar menutupi seluruh layar */
+            background-image: url("/img/ayam_bakar.jpeg");
+            background-size: cover;
             background-position: center;
-            background-attachment: fixed; /* Agar gambar tetap di tempat saat di-scroll */
+            background-attachment: fixed;
             color: var(--secondary-color);
             line-height: 1.6;
-            position: relative; /* Agar overlay bisa bekerja dengan baik */
-            z-index: 0; /* Memastikan konten berada di atas overlay */
+            position: relative;
+            z-index: 0;
         }
 
-        /* Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -52,6 +49,7 @@
             z-index: 1000;
             color: var(--text-color);
             box-shadow: 0 2px 8px var(--shadow-color);
+            flex-wrap: wrap;
         }
 
         .navbar .logo {
@@ -70,16 +68,26 @@
             color: var(--text-color);
             text-decoration: none;
             font-weight: 500;
+            transition: color 0.3s;
         }
 
         .nav-links a:hover {
             color: var(--primary-color);
         }
 
+        .menu-toggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
         .search-bar {
             padding: 8px;
             border-radius: 5px;
             border: 1px solid var(--shadow-color);
+            width: 100%;
+            max-width: 200px;
         }
 
         .btn {
@@ -90,46 +98,43 @@
             border: none;
             cursor: pointer;
             text-decoration: none;
+            transition: background-color 0.3s, transform 0.3s;
         }
 
         .btn:hover {
             background-color: var(--hover-color);
+            transform: scale(1.05);
         }
 
-        /* Hero Section */
         .hero {
-            background-image: url('img/background_hero.jpg');
-            background-size: cover;
-            padding: 120px 20px;
-            color: var(--text-color);
+            padding: 150px 20px;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            color: var(--text-color);
         }
 
         .hero-content h2 {
-            font-size: 36px;
+            font-size: 2.5rem;
             font-weight: bold;
             color: var(--primary-color);
+            animation: fadeInDown 1s ease;
         }
 
         .hero-content p {
             margin-top: 10px;
-            font-size: 18px;
-        }
-
-        /* Hasil Pencarian */
-        .search-results {
-            padding: 20px;
-            margin-top: 80px;
+            font-size: 1.2rem;
+            animation: fadeInUp 1s ease;
         }
 
         .result-list {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 15px;
+            padding: 20px;
+            margin-top: 100px;
             justify-content: center;
         }
 
@@ -137,7 +142,6 @@
             background-color: var(--card-bg);
             border-radius: 8px;
             padding: 15px;
-            width: 160px;
             box-shadow: 0 4px 8px var(--shadow-color);
             text-align: center;
             transition: transform 0.3s ease;
@@ -164,7 +168,6 @@
             color: #777;
         }
 
-        /* Footer */
         footer {
             background-color: var(--secondary-color);
             color: var(--text-color);
@@ -174,26 +177,81 @@
             margin-top: 20px;
         }
 
-    </style>
+        /* Animasi */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .navbar .menu-toggle {
+                display: block;
+            }
+
+            .navbar.expanded .nav-links {
+                display: flex;
+            }
+
+            .hero-content h2 {
+                font-size: 2rem;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .result-item {
+                width: 100%;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggle = document.querySelector('.menu-toggle');
+            const navbar = document.querySelector('.navbar');
+
+            toggle.addEventListener('click', () => {
+                navbar.classList.toggle('expanded');
+            });
+        });
+    </script>
 </head>
 <body>
 
     <!-- Navbar -->
     <header class="navbar">
         <h1 class="logo">Warung Ratu</h1>
+        <span class="menu-toggle">&#9776;</span>
         <ul class="nav-links">
             <li><a href="{{ route('welcome') }}">Home</a></li>
             <li><a href="{{ route('rekomendasi') }}">Rekomendasi</a></li>
+            <li><a href="{{ route('login') }}">Login</a></li>
+            <li><a href="{{ route('register') }}">Register</a></li>
         </ul>
-        <form action="{{ route('search') }}" method="get">
-            <input type="text" name="query" class="search-bar" placeholder="Cari makanan..." value="{{ old('query') }}">
-            <button type="submit" class="btn">Cari</button>
-        </form>
-        <div>
-            <a href="{{ route('login') }}" class="btn">Login</a>
-            <a href="{{ route('register') }}" class="btn">Register</a>
-        </div>
     </header>
 
     <!-- Hero Section -->

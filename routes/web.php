@@ -30,6 +30,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/reports/orders', [ReportController::class, 'orderReport'])->name('reports.orders');
     Route::get('/reports/products', [ReportController::class, 'productReport'])->name('reports.products');
     Route::get('/reports/orders/pdf', [ReportController::class, 'downloadOrderReportPdf'])->name('reports.orders.pdf');
+    Route::post('/upload-avatar', [AdminController::class, 'uploadAvatar'])->name('upload-avatar');
 });
 
 Route::middleware(['auth', 'customer'])->group(function () {

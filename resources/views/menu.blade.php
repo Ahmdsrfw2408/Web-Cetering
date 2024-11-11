@@ -9,6 +9,7 @@
             <a href="{{ route('menu.index', ['category' => 'ekstra']) }}" class="btn-category">Paket Ekstra</a>
             <a href="{{ route('menu.index', ['category' => 'sarapan']) }}" class="btn-category">Paket Sarapan</a>
             <a href="{{ route('menu.index', ['category' => 'makan-siang']) }}" class="btn-category">Paket Makan Siang</a>
+            <a href="{{ route('menu.index', ['category' => 'makan-malam']) }}" class="btn-category">Paket Makan Malam</a>
         </div>
         
         <h3>Menu Makanan</h3>

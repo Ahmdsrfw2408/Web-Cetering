@@ -5,54 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warung Ratu - Hasil Pencarian</title>
     <style>
-        /* CSS disini seperti pada kode yang sudah ada */
-    </style>
-</head>
-<body>
-
-    <!-- Navbar -->
-    <header class="navbar">
-        <h1 class="logo">Warung Ratu</h1>
-        <ul class="nav-links">
-            <li><a href="{{ route('welcome') }}">Home</a></li>
-            <li><a href="{{ route('rekomendasi') }}">Rekomendasi</a></li>
-        </ul>
-        <form action="{{ route('search') }}" method="get">
-            <input type="text" name="query" class="search-bar" placeholder="Cari makanan..." value="{{ request('query') }}">
-            <button type="submit" class="btn">Cari</button>
-        </form>
-        <div>
-            <a href="{{ route('login') }}" class="btn">Login</a>
-            <a href="{{ route('register') }}" class="btn">Register</a>
-        </div>
-    </header>
-
-    <!-- Hasil Pencarian -->
-    <h3>Hasil Pencarian: "{{ $query }}"</h3>
-    <section class="search-results">
-        @if($filteredFoods->isEmpty())
-            <p>Tidak ada hasil yang ditemukan.</p>
-        @else
-            <div class="result-list">
-                @foreach($filteredFoods as $food)
-                    <div class="result-item">
-                        <img src="{{ asset('storage/' . $food->image) }}" alt="{{ $food->name }}">
-                        <span>{{ $food->name }}</span>
-                        <p>Harga: {{ $food->price }}</p>
-                    </div>
-                @endforeach
-            </div>
-        @endif
-    </section>
-    
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 Warung Ratu. All rights reserved.</p>
-    </footer>
-
-    <style>
-        /* Warna tema dan font */
         :root {
             --primary-color: #ff5722;
             --secondary-color: #333;
@@ -64,7 +16,6 @@
             font-family: "Poppins", sans-serif;
         }
 
-        /* Reset dasar */
         * {
             margin: 0;
             padding: 0;
@@ -75,14 +26,14 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background-image: url("/img/ayam_bakar.jpeg"); /* Gambar background */
-            background-size: cover; /* Menyesuaikan ukuran gambar agar menutupi seluruh layar */
+            background-image: url("/img/ayam_bakar.jpeg");
+            background-size: cover;
             background-position: center;
-            background-attachment: fixed; /* Agar gambar tetap di tempat saat di-scroll */
+            background-attachment: fixed;
             color: var(--secondary-color);
             line-height: 1.6;
-            position: relative; /* Agar overlay bisa bekerja dengan baik */
-            z-index: 0; /* Memastikan konten berada di atas overlay */
+            position: relative;
+            z-index: 0;
         }
 
         /* Navbar */
@@ -98,6 +49,7 @@
             z-index: 1000;
             color: var(--text-color);
             box-shadow: 0 2px 8px var(--shadow-color);
+            flex-wrap: wrap;
         }
 
         .navbar .logo {
@@ -116,16 +68,40 @@
             color: var(--text-color);
             text-decoration: none;
             font-weight: 500;
+            transition: color 0.3s;
         }
 
         .nav-links a:hover {
             color: var(--primary-color);
         }
 
+        .menu-toggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .search-bar-container {
+            display: flex;
+            position: relative;
+            width: 100%;
+            max-width: 250px;
+        }
+
         .search-bar {
-            padding: 8px;
+            width: 100%;
+            padding: 8px 35px 8px 10px;
             border-radius: 5px;
             border: 1px solid var(--shadow-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
         }
 
         .btn {
@@ -142,48 +118,64 @@
             background-color: var(--hover-color);
         }
 
-        /* Hero Section */
-        .hero {
-            background-image: url('img/background_hero.jpg');
-            background-size: cover;
-            padding: 120px 20px;
-            color: var(--text-color);
-            text-align: center;
+        .menu-toggle {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
         }
 
-        .hero-content h2 {
-            font-size: 36px;
-            font-weight: bold;
-            color: var(--primary-color);
+        .menu-toggle div {
+            width: 25px;
+            height: 3px;
+            background-color: var(--text-color);
+            border-radius: 5px;
         }
 
-        .hero-content p {
-            margin-top: 10px;
-            font-size: 18px;
+        .nav-links {
+            display: flex;
         }
 
-        /* Hasil Pencarian */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                align-items: center;
+                background-color: rgba(0, 0, 0, 0.8);
+                position: absolute;
+                top: 60px;
+                left: 0;
+                padding: 15px 0;
+                box-shadow: 0 2px 8px var(--shadow-color);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
         .search-results {
             padding: 20px;
-            margin-top: 80px;
+            margin-top: 100px;
         }
 
         .result-list {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 15px;
+            padding: 20px;
+            margin-top: 100px;
             justify-content: center;
         }
-
         .result-item {
             background-color: var(--card-bg);
             border-radius: 8px;
             padding: 15px;
-            width: 160px;
             box-shadow: 0 4px 8px var(--shadow-color);
             text-align: center;
             transition: transform 0.3s ease;
@@ -210,7 +202,6 @@
             color: #777;
         }
 
-        /* Footer */
         footer {
             background-color: var(--secondary-color);
             color: var(--text-color);
@@ -220,7 +211,109 @@
             margin-top: 20px;
         }
 
+         /* Animasi */
+         @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .navbar .menu-toggle {
+                display: block;
+            }
+
+            .navbar.expanded .nav-links {
+                display: flex;
+            }
+
+            .hero-content h2 {
+                font-size: 2rem;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .result-item {
+                width: 100%;
+            }
+        }
     </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <h1 class="logo">Warung Ratu</h1>
+        <span class="menu-toggle">&#9776;</span>
+        <ul class="nav-links">
+            <li><a href="{{ route('welcome') }}">Home</a></li>
+            <li><a href="{{ route('rekomendasi') }}">Rekomendasi</a></li>
+            <li><a href="{{ route('login') }}">Login</a></li>
+            <li><a href="{{ route('register') }}">Register</a></li>
+        </ul>
+        <form action="{{ route('search') }}" method="get" class="search-bar-container">
+            <input type="text" name="query" class="search-bar" placeholder="Cari makanan..." value="{{ request('query') }}">
+            <i class="fas fa-search search-icon"></i>
+        </form>
+    </header>
+
+    <!-- Hasil Pencarian -->
+    <section class="search-results">
+        @if($filteredFoods->isEmpty())
+            <p>Tidak ada hasil yang ditemukan.</p>
+        @else
+            <div class="result-list">
+                @foreach($filteredFoods as $food)
+                    <div class="result-item">
+                        <img src="{{ asset('storage/' . $food->image) }}" alt="{{ $food->name }}">
+                        <span>{{ $food->name }}</span>
+                        <p>Harga: {{ $food->price }}</p>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Warung Ratu. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggle = document.querySelector('.menu-toggle');
+            const navbar = document.querySelector('.navbar');
+
+            toggle.addEventListener('click', () => {
+                navbar.classList.toggle('expanded');
+            });
+        });
+    </script>
+
 </body>
 </html>
-
